@@ -9,29 +9,39 @@
   <body>
     <h3>SIGN UP AS A RESELLER</h3>
     
-    <form action="/signupreseller" method="post"> 
+    <form action="{% url 'signupreseller' %}" method="post"> 
     {% csrf_token %}
-        <label for="">Firstname: </label>
-        <input type="text" id="firstname" name="firstname" placeholder="Enter Firstname" required>
-        <br>
-
-        <label for="">Lastname: </label>
-        <input type="text" id="lastname" name="lastname" placeholder="Enter Lastname" required>
-        <br>
-
-        <label for="">Email Address: </label>
-        <input type="email" id="email" name="email" placeholder="Enter Valid Email" required>
-        <br>
-
-        <label for="">Password: </label>
-        <input type="password" id="password1" name="password1" placeholder="Create Password" required>
-        <br>
-
-        <label for="">Confirm Password: </label>
-        <input type="password" id="password2" name="password2" placeholder="Confirm Password" required>
-        <br>
-
-        <button type="submit">Sign Up</button>
+      <table border="1">
+        <tr>
+          <td><label for="">Firstname: </label></td>
+          <td><input type="text" id="firstname" name="firstname" placeholder="Enter Your Firstname" required></td>
+        </tr>
+        <tr>
+          <td><label for="">Lastname: </label></td>
+          <td><input type="text" id="lastname" name="lastname" placeholder="Enter Your Lastname" required></td>
+        </tr>
+        <tr>
+          <td><label for="">Email Address: </label></td>
+          <td><input type="email" id="email" name="email" placeholder="Enter Your Valid Email" required></td>
+        </tr>
+        <tr>
+          <td><label for="">Password: </label></td>
+          <td><input type="password" id="password1" name="password1" placeholder="Create a Password" required></td>
+        </tr>
+        <tr>
+          <td><label for="">Confirm Password: </label></td>
+          <td><input type="password" id="password2" name="password2" placeholder="Confirm Password" required></td>
+        </tr>
+        <tr>
+          <td><button type="submit">Sign Up</button></td>
+          <td>{% if messages %}
+              {% for msg in messages %}
+                {{msg}}
+              {% endfor%}
+              {% endif %}
+          </td>
+        </tr>
+      </table>
     </form>
   </body>
 </html>

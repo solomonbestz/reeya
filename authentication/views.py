@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
-from django.contrib import messages
-from django.contrib.auth import authenticate, login
 
-update_username = ''
+from .models import Wholseller, Reseller
+from django.contrib import messages
+from .reeyafunc import check_password
+
 
 # Authentication Home View.
 def home(request):
@@ -13,9 +13,15 @@ def home(request):
 def signupchoice(request):
     return render(request, "authentication/signupchoice.html")
 
+# Authentication for login choice
+def loginchoice(request):
+    wholesalers = Wholseller.objects.all()
+    resellers = Reseller.objects.all()
+    return render(request, "authentication/loginchoice.html", {'wholesaler': wholesalers})
+
+
 # Authentication for wholesaler signup
 def signupwholsaler(request):
-    global update_username
     if request.method == 'POST':
         company_name = request.POST.get('username')
         first_name = request.POST.get('firstname')
@@ -23,17 +29,16 @@ def signupwholsaler(request):
         email = request.POST.get('email')
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
+        check = check_password(password1, password2)
 
-        username = first_name +" "+ last_name
-        update_username = username
-        my_user = User.objects.create_user(username, email, password1)
-        my_user.first_name = first_name
-        my_user.last_name = last_name
-
-        my_user.save()
-
-        messages.success(request, "Your Account Has Been Successfully Created.")
-        return redirect('signin')
+        if check:
+            username = first_name +" "+ last_name
+            wholesaler_user = Wholseller.objects.create(company_name=company_name, first_name=first_name, last_name=last_name, email=email, password=password1)
+            wholesaler_user.save()
+            messages.success(request, username+ " Your Account Has Been Successfully Created.")
+            return redirect('home')
+        else:
+            messages.error(request, "Passwords don't match")
 
     return render(request, "authentication/signupwholesaler.html")
 
@@ -41,28 +46,62 @@ def signupwholsaler(request):
 # Authentication for reseller sign up
 def signupreseller(request):
     if request.method == 'POST':
-        pass
+        first_name = request.POST.get('firstname')
+        last_name = request.POST.get('lastname')
+        email = request.POST.get('email')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        check = check_password(password1, password2)
+
+        if check:
+            username = first_name +" "+ last_name
+            reseller_user = Reseller.objects.create(first_name=first_name, last_name=last_name, email=email, password=password1)
+            reseller_user.save()
+            messages.success(request, username+ " Your Account Has Been Successfully Created.")
+            return redirect('home')
+        else:
+            messages.error(request, "Passwords don't match")
     return render(request, "authentication/signupreseller.html")
 
     
 # Authenticatin Signin View
-def signin(request):
+def loginwholesaler(request):
     if request.method == 'POST':
-        user1 = request.POST.get('username')
-        pass1 = request.POST.get('password')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        try:
+            wholeseller_user =  Wholseller.objects.get(email=email, password=password)
+            username = wholeseller_user.first_name +" "+ wholeseller_user.last_name
+            if email == wholeseller_user.email and password == wholeseller_user.password:
+                return redirect("wholesalerboard")
+            else:
+                messages.error(request, "Bad Credentials")
+                return redirect('home')
+        except:
+             messages.error(request, "Bad Credentials")
+             return redirect('loginchoice')
+            
+    return render(request, "authentication/loginwholesaler.html")
 
-        user =  authenticate(username=user1, password=pass1)
+# Authenticatin Signin View
+def loginreseller(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
 
-        if user is not None:
-            login(request, user)
-            first_name = user.username
-            return render(request, "wholesaler/dashboard.html", {'fname':first_name})
-        else:
-            messages.error(request, "Bad Credentials")
-            return redirect('home')
-
-
-    return render(request, "authentication/signin.html", {'username':update_username})
+        try:
+            reseller_user =  Reseller.objects.get(email=email, password=password)
+            username = reseller_user.first_name +" "+ reseller_user.last_name
+            if email == reseller_user.email and password == reseller_user.password:
+                return render(request, "reseller/dashboard.html", {'fname':username})
+            else:
+                messages.error(request, "Bad Credentials")
+                return redirect('home')
+        except:
+             messages.error(request, "Bad Credentials")
+             return redirect('loginchoice')
+            
+    return render(request, "authentication/loginreseller.html")
 
 # Authentication Signout View
 def signout(request):
